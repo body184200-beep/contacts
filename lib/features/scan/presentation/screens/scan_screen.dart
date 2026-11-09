@@ -7,7 +7,7 @@ import '../../../../core/service/scan_service.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/utils/hints.dart';
 import '../../../../core/utils/scan_methods.dart';
-import '../../../../domain/models/contact_model.dart';
+import '../../../../domain/data/models/contact_model.dart';
 import '../widgets/drop_target_item.dart';
 import '../widgets/line_item.dart';
 

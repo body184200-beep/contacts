@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../../../domain/models/contact_model.dart';
+import '../../../../domain/data/models/contact_model.dart';
+import '../../../../domain/data/provider/contact_provider.dart';
 import '../widgets/text_form_field_controller.dart';
 
 class FormScreen extends StatefulWidget {
@@ -127,6 +129,9 @@ class _FormScreenState extends State<FormScreen> {
       widget.contactModel.website = websiteController.text;
       widget.contactModel.designation = designationController.text;
     }
-    
+    Provider.of<ContactProvider>(context, listen: false).addContact(widget.contactModel);
+
+    context.read<ContactProvider>().updateContact(widget.contactModel);
+
   }
 }
