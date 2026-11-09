@@ -72,8 +72,6 @@ class ContactProvider extends ChangeNotifier {
       return;
     }
 
-    // البحث في القائمة المحملة
-    // دون حذف البيانات الأصلية من قاعدة البيانات
     final filteredContacts = _contacts.where((contact) {
       return contact.name.toLowerCase().contains(query.toLowerCase());
     }).toList();

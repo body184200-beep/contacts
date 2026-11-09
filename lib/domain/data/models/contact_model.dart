@@ -66,4 +66,10 @@ class ContactModel {
     image: map[columnImage],
     isFavorite: map[columnIsFavorite] == 1 ? true : false,
   );
+
+  @override
+  String toString() {
+    return 'Contact Model { Id $id, Name $name, Mobile $mobile, email $email , Address $address, Image $image, Website $website, '
+        ' Company $company, Designation $designation, Favorite $isFavorite  }';
+  }
 }

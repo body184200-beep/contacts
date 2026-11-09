@@ -3,6 +3,7 @@ import 'package:contacts/features/scan/presentation/screens/scan_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/custom_dialog/confirm_dismiss.dart';
 import '../../../../domain/data/provider/contact_provider.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/fliatong_action_bottoms.dart';
@@ -55,21 +56,49 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               final contact = contactProvider.contacts[index];
 
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text(contact.name.isNotEmpty ? contact.name[0] : '?'),
+              return Dismissible(
+                key: Key(contact.id.toString()),
+
+                direction: DismissDirection.endToStart,
+
+                background: Container(
+                  color: Appcolors.red,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Icon(Icons.delete, color: Appcolors.white),
                 ),
-                trailing: IconButton(
-                  onPressed: () {
-                    contactProvider.toggleFavorite(contact);
-                  },
-                  icon: Icon(
-                    contact.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: Appcolors.red,
+
+                confirmDismiss: (direction) async {
+                  return await showDialog<bool>(
+                    context: context,
+                    builder: (context) => const ConfirmDismiss(),
+                  );
+                },
+
+                onDismissed: (direction) {
+                  contactProvider.removeContact(contact);
+                },
+
+                child: ListTile(
+                  leading: CircleAvatar(
+                    child: Text(
+                      contact.name.isNotEmpty ? contact.name[0] : '?',
+                    ),
                   ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      contactProvider.toggleFavorite(contact);
+                    },
+                    icon: Icon(
+                      contact.isFavorite
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: Appcolors.red,
+                    ),
+                  ),
+                  title: Text(contact.name),
+                  subtitle: Text(contact.mobile),
                 ),
-                title: Text(contact.name),
-                subtitle: Text(contact.mobile),
               );
             },
           );
