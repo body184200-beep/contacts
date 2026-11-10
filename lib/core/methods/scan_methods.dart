@@ -1,4 +1,4 @@
-import 'constants.dart';
+import '../utils/constants.dart';
 
 void getProertyValue(
   String value,

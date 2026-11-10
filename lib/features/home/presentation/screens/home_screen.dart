@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/custom_dialog/confirm_dismiss.dart';
 import '../../../../domain/data/provider/contact_provider.dart';
+import '../../../contacts/presentation/screens/contact_details_screen.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/fliatong_action_bottoms.dart';
 
@@ -58,9 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               return Dismissible(
                 key: Key(contact.id.toString()),
-
                 direction: DismissDirection.endToStart,
-
                 background: Container(
                   color: Appcolors.red,
                   alignment: Alignment.centerRight,
@@ -80,8 +79,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
 
                 child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ContactDetailsScreen(
+                          contactId: contact.id,
+                        ),
+                      ),
+                    );
+                  },
                   leading: CircleAvatar(
                     child: Text(
+
                       contact.name.isNotEmpty ? contact.name[0] : '?',
                     ),
                   ),

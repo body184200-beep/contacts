@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../core/methods/home_methods.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   const CustomBottomNavigationBar({super.key});
@@ -26,6 +27,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
           setState(() {
             selectedIndex = index;
           });
+          fetchContacts(index, context);
         },
         selectedItemColor: Appcolors.white,
         unselectedItemColor: Appcolors.gray,

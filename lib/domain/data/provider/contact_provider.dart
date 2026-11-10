@@ -5,6 +5,7 @@ import '../models/contact_model.dart';
 
 class ContactProvider extends ChangeNotifier {
   List<ContactModel> _contacts = [];
+  List<ContactModel> _allContacts = [];
 
   final DataBase _dataBase = DataBase();
 
@@ -30,7 +31,8 @@ class ContactProvider extends ChangeNotifier {
   }
 
   Future<void> loadContacts() async {
-    _contacts = await _dataBase.getAllContacts();
+    _allContacts = await _dataBase.getAllContacts();
+    _contacts = List.from(_allContacts);
     notifyListeners();
   }
 
@@ -45,11 +47,14 @@ class ContactProvider extends ChangeNotifier {
   }
 
   void toggleFavorite(ContactModel contact) {
-    final index = _contacts.indexWhere((element) => element.id == contact.id);
+    final index = _allContacts.indexWhere(
+      (element) => element.id == contact.id,
+    );
 
     if (index != -1) {
-      _contacts[index].isFavorite = !_contacts[index].isFavorite;
+      _allContacts[index].isFavorite = !_allContacts[index].isFavorite;
 
+      _contacts = List.from(_allContacts);
       notifyListeners();
     }
   }
@@ -66,6 +71,10 @@ class ContactProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<ContactModel?> getContactById(int id) async {
+    return await _dataBase.getContactById(id);
+  }
+
   void searchContacts(String query) {
     if (query.isEmpty) {
       loadContacts();
@@ -77,6 +86,12 @@ class ContactProvider extends ChangeNotifier {
     }).toList();
 
     _contacts = filteredContacts;
+    notifyListeners();
+  }
+
+  void loadFavorites() {
+    _contacts = _allContacts.where((contact) => contact.isFavorite).toList();
+
     notifyListeners();
   }
 }
