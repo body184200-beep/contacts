@@ -16,8 +16,12 @@ class ContactProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeContact(ContactModel contact) {
-    _contacts.remove(contact);
+  Future<void> removeContact(ContactModel contact) async {
+    if (contact.id > 0) {
+      await _dataBase.delete(contact.id);
+    }
+    _allContacts.removeWhere((element) => element.id == contact.id);
+    _contacts.removeWhere((element) => element.id == contact.id);
     notifyListeners();
   }
 
@@ -37,7 +41,7 @@ class ContactProvider extends ChangeNotifier {
   }
 
   Future<void> saveContact(ContactModel contact) async {
-    if (contact.id == -1) {
+    if (contact.id <= 0) {
       contact.id = await _dataBase.insert(contact);
     } else {
       await _dataBase.update(contact);
@@ -46,17 +50,24 @@ class ContactProvider extends ChangeNotifier {
     await loadContacts();
   }
 
-  void toggleFavorite(ContactModel contact) {
-    final index = _allContacts.indexWhere(
-      (element) => element.id == contact.id,
-    );
+  Future<void> toggleFavorite(ContactModel contact) async {
+    contact.isFavorite = !contact.isFavorite;
 
-    if (index != -1) {
-      _allContacts[index].isFavorite = !_allContacts[index].isFavorite;
-
-      _contacts = List.from(_allContacts);
-      notifyListeners();
+    if (contact.id > 0) {
+      await _dataBase.update(contact);
     }
+
+    final index = _allContacts.indexWhere((element) => element.id == contact.id);
+    if (index != -1) {
+      _allContacts[index] = contact;
+    }
+
+    final contactIndex = _contacts.indexWhere((element) => element.id == contact.id);
+    if (contactIndex != -1) {
+      _contacts[contactIndex] = contact;
+    }
+
+    notifyListeners();
   }
 
   void sortContacts(bool isAscending) {
@@ -76,13 +87,15 @@ class ContactProvider extends ChangeNotifier {
   }
 
   void searchContacts(String query) {
-    if (query.isEmpty) {
-      loadContacts();
+    if (query.trim().isEmpty) {
+      _contacts = List.from(_allContacts);
+      notifyListeners();
       return;
     }
 
-    final filteredContacts = _contacts.where((contact) {
-      return contact.name.toLowerCase().contains(query.toLowerCase());
+    final filteredContacts = _allContacts.where((contact) {
+      return contact.name.toLowerCase().contains(query.toLowerCase()) ||
+          contact.mobile.contains(query);
     }).toList();
 
     _contacts = filteredContacts;
@@ -91,7 +104,6 @@ class ContactProvider extends ChangeNotifier {
 
   void loadFavorites() {
     _contacts = _allContacts.where((contact) => contact.isFavorite).toList();
-
     notifyListeners();
   }
 }

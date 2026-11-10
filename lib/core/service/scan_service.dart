@@ -1,8 +1,15 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
+class ScanResult {
+  final List<String> lines;
+  final String imagePath;
+
+  ScanResult({required this.lines, required this.imagePath});
+}
+
 class ScanService {
-  Future<List<String>?> scanText(ImageSource imageSource) async {
+  Future<ScanResult?> scanText(ImageSource imageSource) async {
     final xFile = await ImagePicker().pickImage(source: imageSource);
 
     if (xFile == null) return null;
@@ -24,7 +31,7 @@ class ScanService {
         }
       }
 
-      return tempList;
+      return ScanResult(lines: tempList, imagePath: xFile.path);
     } finally {
       await textRecognizer.close();
     }

@@ -37,7 +37,6 @@ class ContactModel {
 
   Map<String, dynamic> toMap() {
     final map = <String, dynamic>{
-      columnId: id,
       columnName: name,
       columnEmail: email,
       columnMobile: mobile,
@@ -50,22 +49,22 @@ class ContactModel {
     };
 
     if (id > 0) {
-      return {columnId: id};
+      map[columnId] = id;
     }
     return map;
   }
 
   factory ContactModel.fromMap(Map<String, dynamic> map) => ContactModel(
-    id: map[columnId],
-    name: map[columnName],
-    mobile: map[columnMobile],
-    email: map[columnEmail],
-    address: map[columnAddress],
-    company: map[columnCompany],
-    website: map[columnWebsite],
-    designation: map[columnDesignation],
-    image: map[columnImage],
-    isFavorite: map[columnIsFavorite] == 1 ? true : false,
+    id: map[columnId] ?? -1,
+    name: map[columnName] ?? '',
+    mobile: map[columnMobile] ?? '',
+    email: map[columnEmail] ?? '',
+    address: map[columnAddress] ?? '',
+    company: map[columnCompany] ?? '',
+    website: map[columnWebsite] ?? '',
+    designation: map[columnDesignation] ?? '',
+    image: map[columnImage] ?? '',
+    isFavorite: map[columnIsFavorite] == 1,
   );
 
   @override

@@ -1,13 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:contacts/core/theme/colors.dart';
-import '../../../../core/service/scan_service.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/utils/hints.dart';
-import '../../../../core/methods/scan_methods.dart';
-import '../../../../domain/data/models/contact_model.dart';
+import '../../logic/scan_controller.dart';
 import '../widgets/drop_target_item.dart';
 import '../widgets/line_item.dart';
 
@@ -19,171 +17,232 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> {
-  bool isScan = false;
-  List<String> lines = [];
+  late final ScanController _controller;
 
-  String name = '';
-  String address = '';
-  String mobile = '';
-  String email = '';
-  String company = '';
-  String designation = '';
-  String website = '';
-  String image = '';
-
-  void creatContact() {
-    final contact = ContactModel(
-      name: name,
-      mobile: mobile,
-      email: email,
-      address: address,
-      company: company,
-      website: website,
-      designation: designation,
-      image: image,
-    );
-    Navigator.pop(context, contact);
-
+  @override
+  void initState() {
+    super.initState();
+    _controller = ScanController(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Scan"),
-        centerTitle: true,
+        title: const Text('Scan Card'),
         actions: [
-          IconButton(
-            onPressed: image.isNotEmpty ? null : creatContact,
-            icon: Icon(Icons.arrow_forward_sharp),
-          ),
-        ],
-      ),
-      body: ListView(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton.icon(
-                onPressed: () {
-                  getImage(imageSource: ImageSource.camera);
-                },
-                icon: Icon(Icons.camera_alt, color: Appcolors.blue),
-                label: const Text("Camera"),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  getImage(imageSource: ImageSource.gallery);
-                },
-                icon: Icon(Icons.image, color: Appcolors.blue),
-                label: const Text("Gallery"),
-              ),
-            ],
-          ),
-
-          if (isScan) ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  children: [
-                    DropTargetItem(
-                      property: ContactProperties.name,
-                      onDrop: (value, property) {
-                        setState(() {
-                          getProertyValue(value, property, (field, newValue) {
-                            switch (field) {
-                              case ContactProperties.name:
-                                name = newValue;
-                                break;
-                              case ContactProperties.email:
-                                email = newValue;
-                                break;
-                              case ContactProperties.mobile:
-                                mobile = newValue;
-                                break;
-                              case ContactProperties.address:
-                                address = newValue;
-                                break;
-                              case ContactProperties.website:
-                                website = newValue;
-                                break;
-                              case ContactProperties.company:
-                                company = newValue;
-                                break;
-                              case ContactProperties.designation:
-                                designation = newValue;
-                                break;
-                            }
-                          });
-                        });
-                      },
-                    ),
-                    DropTargetItem(
-                      property: ContactProperties.mobile,
-                      onDrop: (value, property) {},
-                    ),
-                    DropTargetItem(
-                      property: ContactProperties.email,
-                      onDrop: (value, property) {},
-                    ),
-                    DropTargetItem(
-                      property: ContactProperties.address,
-                      onDrop: (value, property) {},
-                    ),
-                    DropTargetItem(
-                      property: ContactProperties.website,
-                      onDrop: (value, property) {},
-                    ),
-                    DropTargetItem(
-                      property: ContactProperties.company,
-                      onDrop: (value, property) {},
-                    ),
-                    DropTargetItem(
-                      property: ContactProperties.designation,
-                      onDrop: (value, property) {},
-                    ),
-                  ],
+          if (_controller.isScan)
+            TextButton.icon(
+              onPressed: _controller.proceedToForm,
+              icon: const Icon(Icons.arrow_forward, color: Appcolors.white, size: 18),
+              label: const Text(
+                'Next',
+                style: TextStyle(
+                  color: Appcolors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
               ),
             ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Source Buttons
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Appcolors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Appcolors.border),
+            ),
+            child: Column(
+              children: [
+                if (_controller.imagePath.isNotEmpty &&
+                    File(_controller.imagePath).existsSync()) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      File(_controller.imagePath),
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _controller.pickAndScan(
+                          ImageSource.camera,
+                          () => setState(() {}),
+                        ),
+                        icon: const Icon(Icons.camera_alt_outlined),
+                        label: const Text('Camera'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Appcolors.primary,
+                          foregroundColor: Appcolors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _controller.pickAndScan(
+                          ImageSource.gallery,
+                          () => setState(() {}),
+                        ),
+                        icon: const Icon(Icons.photo_library_outlined),
+                        label: const Text('Gallery'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Appcolors.primary,
+                          side: const BorderSide(color: Appcolors.primary),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
 
-            Padding(padding: const EdgeInsets.all(8), child: Text(Hints.hint)),
-
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: lines.map((line) {
-                  return LineItem(line: line);
-                }).toList(),
+          if (_controller.isScan) ...[
+            const SizedBox(height: 20),
+            // Targets
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Appcolors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Appcolors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Assign Fields',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Appcolors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...[
+                    ContactProperties.name,
+                    ContactProperties.mobile,
+                    ContactProperties.email,
+                    ContactProperties.address,
+                    ContactProperties.website,
+                    ContactProperties.company,
+                    ContactProperties.designation,
+                  ].map(
+                    (prop) => DropTargetItem(
+                      property: prop,
+                      currentValue: _controller.properties[prop] ?? '',
+                      onDrop: (val) => _controller.assignProperty(
+                        prop,
+                        val,
+                        () => setState(() {}),
+                      ),
+                      onClear: () => _controller.clearProperty(
+                        prop,
+                        () => setState(() {}),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+
+            const SizedBox(height: 16),
+            // Drag Hint
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Appcolors.primarySoft,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Appcolors.primary, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      Hints.hint,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Appcolors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            // Scanned Chips
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Appcolors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Appcolors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Extracted Text Elements',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Appcolors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _controller.lines.map((line) {
+                      return LineItem(line: line);
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _controller.proceedToForm,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Appcolors.primary,
+                foregroundColor: Appcolors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: const Text(
+                'Continue to Form',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ],
       ),
     );
-  }
-
-  Future<void> getImage({required ImageSource imageSource}) async {
-    EasyLoading.show(status: "Loading...");
-
-    try {
-      final result = await ScanService().scanText(imageSource);
-
-      if (!mounted) return;
-
-      if (result != null) {
-        setState(() {
-          isScan = true;
-          lines = result;
-        });
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    } finally {
-      EasyLoading.dismiss();
-    }
   }
 }

@@ -1,17 +1,13 @@
-import 'package:contacts/features/home/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
+import 'core/theme/app_theme.dart';
 import 'domain/data/provider/contact_provider.dart';
+import 'features/home/presentation/screens/home_screen.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => ContactProvider(),
-      child: MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -19,10 +15,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      builder: EasyLoading.init(),
-      home: HomeScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => ContactProvider(),
+      child: MaterialApp(
+        title: 'Contacts',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        builder: EasyLoading.init(),
+        home: const HomeScreen(),
+      ),
     );
   }
 }
